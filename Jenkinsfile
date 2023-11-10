@@ -1,57 +1,30 @@
-pipeline {
-    
+pipeline{
     agent any
-    tools{
-        docker 'docker'
+    options{
+        buildDiscarder(logRotator(numToKeepStr: '5', daysToKeepStr: '5'))
+        timestamps()
     }
-    environment {
-        imageName = "myappgo"
-        registryCredentials = "nexus"
-        registry = "http://100.102.123.78:8085/"
-        dockerImage = ''
+    environment{
+        
+        registry = "<dockerhub-username>/<repo-name>"
+        registryCredential = '<dockerhub-credential-name>'        
     }
     
-    stages {
-        stage('Code checkout') {
-            steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/BataraKresn/go-example.git']]])                   
-                }
-        }
-    
-    // Building Docker images
-    stage('Building image') {
+    stages{
+       stage('Building image') {
       steps{
         script {
-          dockerImage = docker.build imageName
+          dockerImage = docker.build registry + ":$BUILD_NUMBER"
         }
       }
     }
-
-    // Uploading Docker images into Nexus Registry
-    stage('Uploading to Nexus') {
-     steps{  
+       stage('Deploy Image') {
+      steps{
          script {
-             docker.withRegistry( 'http://'+registry, registryCredentials ) {
-             dockerImage.push('latest')
+            docker.withRegistry( '', registryCredential ) {
+            dockerImage.push()
           }
         }
       }
-    }
-    
-    // Stopping Docker containers for cleaner Docker run
-    stage('stop previous containers') {
-         steps {
-            sh 'docker ps -f name=myphpcontainer -q | xargs --no-run-if-empty docker container stop'
-            sh 'docker container ls -a -fname=myphpcontainer -q | xargs -r docker container rm'
-         }
-       }
-      
-    stage('Docker Run') {
-       steps{
-         script {
-                sh 'docker run -d -p 80:80 --rm --name myphpcontainer ' + registry + imageName
-            }
-         }
-      }    
     }
 }
