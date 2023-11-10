@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Code checkout') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'git@github.com:BataraKresn/go-example.git']]])                   
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/BataraKresn/go-example.git']]])                   
                 }
         }
     
