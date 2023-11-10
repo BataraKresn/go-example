@@ -1,7 +1,9 @@
 pipeline {
     
     agent any
-    
+    toos{
+        docker 'docker'
+    }
     environment {
         imageName = "myappgo"
         registryCredentials = "nexus"
