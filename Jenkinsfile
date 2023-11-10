@@ -3,7 +3,7 @@ pipeline {
     agent any
     
     environment {
-        imageName = "myappgo:v.1"
+        imageName = "myappgo"
         registryCredentials = "nexus"
         registry = "http://100.102.123.78:8085/"
         dockerImage = ''
