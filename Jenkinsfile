@@ -1,30 +1,37 @@
-pipeline{
+pipeline {
     agent any
-    options{
-        buildDiscarder(logRotator(numToKeepStr: '5', daysToKeepStr: '5'))
-        timestamps()
+    environment {
+        NEXUS_CREDS = credentials('nexus_creds')
+        NEXUS_DOCKER_REPO = '100.102.123.78:8081/repository/docker-images-repo-private/'
     }
-    environment{
+
+    stages {
+       
+       stage('Docker Build') {
         
-        registry = "http://100.102.123.78:8081/repository/docker-images-repo-private/"
-        registryCredential = 'admin'        
-    }
-    
-    stages{
-       stage('Building image') {
-      steps{
-        script {
-          dockerImage = docker.build registry + ":$BUILD_NUMBER"
+            steps { 
+                    echo 'Building docker Image'
+                    sh 'docker build -t $NEXUS_DOCKER_REPO/go-1:$BUILD_NUMBER .'
+                }
         }
-      }
-    }
-       stage('Deploy Image') {
-      steps{
-         script {
-            docker.withRegistry( '', registryCredential ) {
-            dockerImage.push()
-          }
+
+       stage('Docker Login') {
+            steps {
+                echo 'Nexus Docker Repository Login'
+                script{
+                    withCredentials([usernamePassword(credentialsId: 'nexus_creds', usernameVariable: 'admin', passwordVariable: 'admin123' )]){
+                       sh ' echo $PASS | docker login -u $USER --password-stdin $NEXUS_DOCKER_REPO'
+                    }
+                   
+                }
+            }
         }
-      }
+
+        stage('Docker Push') {
+            steps {
+                echo 'Pushing Imgaet to docker hub'
+                sh 'docker push $NEXUS_DOCKER_REPO/fakeweb:$BUILD_NUMBER'
+            }
+        }
     }
 }
