@@ -6,8 +6,8 @@ pipeline{
     }
     environment{
         
-        registry = "<dockerhub-username>/<repo-name>"
-        registryCredential = '<dockerhub-credential-name>'        
+        registry = "http://100.102.123.78:8081/repository/docker-images-repo-private/"
+        registryCredential = 'admin'        
     }
     
     stages{
