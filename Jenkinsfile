@@ -1,7 +1,7 @@
 pipeline {
     
     agent any
-    toos{
+    tools{
         docker 'docker'
     }
     environment {
